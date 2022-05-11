@@ -1,41 +1,45 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const express = require('express');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+const app = express();
 
-var app = express();
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'pug');
+app.get('/posts', (req,res) => {
+  res.send('posts');
+})
 
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+app.listen(3000);
+// app.set('views', path.join(__dirname, 'views'));
+// app.set('view engine', 'pug');
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
 
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
-});
+async function main() {
+  
+  const { MongoClient, ServerApiVersion } = require('mongodb');
+  const uri = "mongodb+srv://quizza-user:m29FXAsAUwVvy9rT@quizzacluster.qcyt3.mongodb.net/quizzadb?retryWrites=true&w=majority";
+  const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
+  
+  try {
+    await client.connect();
+    
+    await printIfListingExists(client, "always under water/submerged");
+  } finally {
+    await client.close();
+  }
+}
 
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+async function printIfListingExists(client, nameOfListing) {
+  const result = await client.db("sample_geospatial").collection("shipwrecks")
+  .findOne({ watlev: nameOfListing });
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
-});
+  if (result) {
+    console.log('found')
+    console.log(result);
+  } else {
+    console.log('not found')
+  }
+}
 
-module.exports = app;
+
+app.get("/", async (req, res) => {
+  main();
+})
