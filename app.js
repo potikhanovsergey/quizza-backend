@@ -12,8 +12,7 @@ app.listen(3000);
 // app.set('view engine', 'pug');
 
 
-async function main() {
-  
+app.get("/", async (req, res) => {
   const { MongoClient, ServerApiVersion } = require('mongodb');
   const uri = "mongodb+srv://quizza-user:m29FXAsAUwVvy9rT@quizzacluster.qcyt3.mongodb.net/quizzadb?retryWrites=true&w=majority";
   const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
@@ -21,25 +20,19 @@ async function main() {
   try {
     await client.connect();
     
-    await printIfListingExists(client, "always under water/submerged");
+    const result = await client.db("sample_geospatial").collection("shipwrecks")
+    .findOne({watlev: "always dry"});
+
+    if (result) {
+      console.log(result);
+    } else {
+      console.log('not found');
+    }
+
+    res.send(result);
+  
+  
   } finally {
     await client.close();
   }
-}
-
-async function printIfListingExists(client, nameOfListing) {
-  const result = await client.db("sample_geospatial").collection("shipwrecks")
-  .findOne({ watlev: nameOfListing });
-
-  if (result) {
-    console.log('found')
-    console.log(result);
-  } else {
-    console.log('not found')
-  }
-}
-
-
-app.get("/", async (req, res) => {
-  main();
 })
