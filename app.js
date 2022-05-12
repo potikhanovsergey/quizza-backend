@@ -1,38 +1,28 @@
-const express = require('express');
+import express from 'express';
+import routes from './routes/questions.js';
+import mongoose from 'mongoose';
+import defaultRoutes from './routes/default.js';
 
 const app = express();
+const PORT = 3000;
+app.use(express.urlencoded({extended: true}));
+app.use(express.json())
 
+defaultRoutes(app);
+routes(app);
 
-app.get('/posts', (req,res) => {
-  res.send('posts');
+mongoose.Promise = global.Promise;
+
+mongoose.connect('mongodb://localhost:27017/quizzadb', {
+  useNewUrlParser: true,
+  useUnifiedTopology: false
 })
 
-app.listen(3000);
+app.get('/', (req, res) => {
+  res.send('Node and express server');
+})
+
+app.listen(PORT);
 // app.set('views', path.join(__dirname, 'views'));
 // app.set('view engine', 'pug');
 
-
-app.get("/", async (req, res) => {
-  const { MongoClient, ServerApiVersion } = require('mongodb');
-  const uri = "mongodb+srv://quizza-user:m29FXAsAUwVvy9rT@quizzacluster.qcyt3.mongodb.net/quizzadb?retryWrites=true&w=majority";
-  const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
-  
-  try {
-    await client.connect();
-    
-    const result = await client.db("sample_geospatial").collection("shipwrecks")
-    .findOne({watlev: "always dry"});
-
-    if (result) {
-      console.log(result);
-    } else {
-      console.log('not found');
-    }
-
-    res.send(result);
-  
-  
-  } finally {
-    await client.close();
-  }
-})
