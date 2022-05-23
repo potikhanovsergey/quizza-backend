@@ -1,11 +1,11 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
 
-export const QuestionSchema = new Schema({
+const QuestionSchema = new Schema({
   question: {
     type: String,
-    required: "Enter question title"
+    required: "Enter the question title"
   },
   answer: {
     type: String,
@@ -16,10 +16,24 @@ export const QuestionSchema = new Schema({
     type: [String],
     validate: (arr) => {
       return (arr.length === 3);
+    },
+  },
+  image: {
+    required: false,
+    url: {
+      type: String,
+      default: "path/to/placeholder/should/be/here"
+    },
+    alt: {
+      type: String,
+      default: "Quizza Game"
     }
   },
-  created_date: {
-    type: Date,
-    default: Date.now
-  },
+  category: {
+    type: String
+  }
 })
+
+module.exports = {
+  QuestionSchema
+}

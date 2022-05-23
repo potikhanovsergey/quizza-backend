@@ -1,5 +1,5 @@
-import express from 'express';
-import routes from './questions';
+const express = require('express');
+const questionsRoutes = require('./questions');
 
 const router = express.Router();
 
@@ -9,4 +9,6 @@ router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
 
-export default router;
+module.exports = {
+  router
+}

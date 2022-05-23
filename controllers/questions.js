@@ -1,10 +1,10 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
-import { QuestionSchema } from "../models/questions.js";
+const { QuestionSchema } = require('../models/questions.js');
 
 const Question = mongoose.model('Questions', QuestionSchema);
 
-export const addNewQuestion = (req, res) => {
+const addNewQuestion = (req, res) => {
   let newQuestion = new Question(req.body);
   newQuestion.save((err, question) => {
     if (err) {
@@ -13,4 +13,8 @@ export const addNewQuestion = (req, res) => {
 
     res.json(question);
   })
+}
+
+module.exports = {
+  addNewQuestion
 }

@@ -1,4 +1,4 @@
-import { addNewQuestion } from "../controllers/questions.js"
+const { addNewQuestion } = require("../controllers/questions.js");
 
 const routes = (app) => {
   app.route('/questions')
@@ -16,4 +16,6 @@ const routes = (app) => {
   })
 }
 
-export default routes;
+module.exports = {
+  routes
+}
