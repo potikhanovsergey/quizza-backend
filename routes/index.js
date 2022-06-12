@@ -1,14 +1,29 @@
-const express = require('express');
-const questionsRoutes = require('./questions');
 
-const router = express.Router();
+module.exports = (app, passport) => {
 
 
-/* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
-});
+  //================= Social Auth
+  const networks = ['vkontakte']; // 'google'
+  networks.forEach(network => {
 
-module.exports = {
-  router
-}
+      app.get(`/registration/${network}`, (request, response) => {
+          passport.authenticate(network, {
+              scope:'email'
+          })(request, response);
+      });
+
+      app.get(`/registration/${network}/callback`, (request, response) => {
+          passport.authenticate(network, {
+              successRedirect: '/auth-success',
+              failureRedirect: '/auth-error'
+          })(request, response);
+      });
+  });
+
+  // const authSuccess = require('./authSuccess');
+  // app.get('/auth-success', authSuccess.get);
+
+  //================= logout
+  // const logoutRoute = require('./logout');
+  // app.get('/logout', logoutRoute.get);
+};
