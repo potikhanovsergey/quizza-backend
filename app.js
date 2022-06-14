@@ -7,17 +7,14 @@ const cors = require('cors');
 const path = require('path');
 const http = require('http');
 const socketIO = require('socket.io');
-
-
+const { getQuestions } = require("./controllers/questions.js");
 
 
 const app = express();
-const PORT = 3000;
 app.use(express.urlencoded({extended: true}));
 app.use(express.json())
 app.use(cors());
 
-defaultR.defaultRoutes(app);
 questions.routes(app);
 
 mongoose.Promise = global.Promise;
@@ -38,24 +35,54 @@ mongoose.connect('mongodb://localhost:27017/quizzadb', {
 const publicPath = path.join(__dirname, '/../public');
 console.log(publicPath);
 const port = process.env.PORT || 3000;
-let server = http.createServer(app);
-let io = socketIO(server);
+let httpServer = http.createServer(app);
+
+const io = new socketIO.Server(httpServer, {
+  cors: {
+    origin: "*"
+  }
+});
 
 app.use(express.static(publicPath));
 
-server.listen(port, ()=> {
+httpServer.listen(port, ()=> {
   console.log(`Server is up on port ${port}.`)
 });
 
-io.on('connection', (socket) => {
-  console.log('A user just connected.');
-  socket.on('disconnect', () => {
-      console.log('A user has disconnected.');
-  })
-  socket.on('startGame', () => {
-    console.log('Game has been started')
-  })
-  socket.on('answerIsClicked', (answer) => {
-    io.emit('answerIsClicked', answer);
-  })
+const RoomUserSocket = {}; // {roomID: userID: socket}
+let userID = 0;
+
+io.on('connection', async (client) => {
+  // Получает параметры, переданные от клиента сокета
+  console.log(client.id, 'has connected')
+  client.on('joinGameRoom', async (data) => {
+    console.log('Client has tried to join the room', data);
+    const { userID, roomID } = data;
+    let roomClients = await io.sockets.adapter.rooms.get(roomID);
+    if (!roomClients) {
+      RoomUserSocket[roomID] = {};
+    }
+    // Присваиваем айдишнику пользователя вошедшего в комнату его текущий сокет
+    RoomUserSocket[roomID][userID] = client; 
+
+    // const usersLength = Object.keys(RoomUserSocket[roomID]).length;
+    // если меньше двух уникальных пользователей, можно присоединиться в комнату
+    if (!roomClients || (roomClients && roomClients.size < 2)) { 
+      client.join(roomID);
+      roomClients = await io.sockets.adapter.rooms.get(roomID);
+      console.log('Client has joined the room', data, roomClients);
+    }
+
+    // если два участника в комнате
+    if (roomClients && roomClients.size === 2) {
+      const questions = await getQuestions();
+      io.to(roomID).emit('startGame', { roomID: roomID, questions })
+    }
+  });
+
+
+  userID++;
+  io.to(client.id).emit('sendID', {userID})
+
+
 });

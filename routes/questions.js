@@ -1,10 +1,7 @@
-const { addNewQuestion } = require("../controllers/questions.js");
-
+const { addNewQuestion, getQuestions } = require("../controllers/questions.js");
 const routes = (app) => {
   app.route('/questions')
-  .get((req, res) => {
-    res.send('GET request')
-  })
+  .get(getQuestions)
   .post(addNewQuestion)
 
   app.route('/questions/:questionID')
@@ -19,3 +16,4 @@ const routes = (app) => {
 module.exports = {
   routes
 }
+

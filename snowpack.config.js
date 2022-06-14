@@ -1,34 +1,34 @@
-const proxy = require('http2-proxy')
+// const proxy = require('http2-proxy')
 
-/** @type {import("snowpack").SnowpackUserConfig } */
-module.exports = {
-  mount: {
-    "../../sockets-html-test": "/"
-  },
-  routes: [
-    {
-      src: '/ws',
-      upgrade: (req, socket, head) => {
+// /** @type {import("snowpack").SnowpackUserConfig } */
+// module.exports = {
+//   mount: {
+//     "../../sockets-html-test": "/"
+//   },
+//   routes: [
+//     {
+//       src: '/ws',
+//       upgrade: (req, socket, head) => {
 
-        const defaultWSHandler = (err, req, socket, head) => {
-          if (err) {
-            console.error('proxy error', err);
-            socket.destroy();
-          }
-        };
+//         const defaultWSHandler = (err, req, socket, head) => {
+//           if (err) {
+//             console.error('proxy error', err);
+//             socket.destroy();
+//           }
+//         };
 
-        proxy.ws(
-          req,
-          socket,
-          head,
-          {
-            hostname: 'localhost',
-            port: 7071,
-          },
-          defaultWSHandler,
-        );
-      },
+//         proxy.ws(
+//           req,
+//           socket,
+//           head,
+//           {
+//             hostname: 'localhost',
+//             port: 7071,
+//           },
+//           defaultWSHandler,
+//         );
+//       },
 
-    },
-  ],
-};
+//     },
+//   ],
+// };
