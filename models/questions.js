@@ -7,16 +7,13 @@ const QuestionSchema = new Schema({
     type: String,
     required: "Enter the question title"
   },
-  answer: {
-    type: String,
-    required: "Enter the right answer"
-  },
-  fakeAnswers: {
-    required: "Enter the array of three fake answers",
+  answers: {
     type: [String],
-    validate: (arr) => {
-      return (arr.length === 3);
-    },
+    required: "Enter the list of answers"
+  },
+  rightAnswerID: {
+    type: Number,
+    required: "Enter the right answer ID (0-3)"
   },
   image: {
     required: false,

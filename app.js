@@ -67,19 +67,26 @@ io.on('connection', async (client) => {
 
     // const usersLength = Object.keys(RoomUserSocket[roomID]).length;
     // если меньше двух уникальных пользователей, можно присоединиться в комнату
-    if (!roomClients || (roomClients && roomClients.size < 2)) { 
-      client.join(roomID);
-      roomClients = await io.sockets.adapter.rooms.get(roomID);
-      console.log('Client has joined the room', data, roomClients);
-    }
+    // if (!roomClients || (roomClients && roomClients.size < 2)) { 
+    client.join(roomID);
+    roomClients = await io.sockets.adapter.rooms.get(roomID);
+    console.log('Client has joined the room', data, roomClients);
+    // }
 
     // если два участника в комнате
-    if (roomClients && roomClients.size === 2) {
+    console.log(roomClients);
+    if (roomClients && roomClients.size >= 2) {
       const questions = await getQuestions();
-      io.to(roomID).emit('startGame', { roomID: roomID, questions })
+      io.to(roomID).emit('startGame', { roomID: roomID })
+      io.to(roomID).emit('pushGameInfo', { roomID: roomID, questions })
     }
   });
 
+  client.on('chooseAnswer', async (data) => {
+    console.log('client chose answer >', data);
+    const { roomID, answerID } = data;
+    client.to(roomID).emit('otherPlayerChoseAnswer', { answerID });
+  });
 
   userID++;
   io.to(client.id).emit('sendID', {userID})
