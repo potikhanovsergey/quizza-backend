@@ -77,8 +77,8 @@ io.on('connection', async (client) => {
     console.log(roomClients);
     if (roomClients && roomClients.size >= 2) {
       const questions = await getQuestions();
-      io.to(roomID).emit('startGame', { roomID: roomID })
-      io.to(roomID).emit('pushGameInfo', { roomID: roomID, questions })
+      io.to(roomID).emit('startGame', { roomID: roomID });
+      io.to(roomID).emit('pushGameInfo', { roomID: roomID, questions });
     }
   });
 
