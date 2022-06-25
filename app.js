@@ -49,43 +49,92 @@ httpServer.listen(port, ()=> {
   console.log(`Server is up on port ${port}.`)
 });
 
-const RoomUserSocket = {}; // {roomID: userID: socket}
+const RoomUser = {}; // {roomID: userID: socket}
 let userID = 0;
 
 io.on('connection', async (client) => {
   // Получает параметры, переданные от клиента сокета
-  console.log(client.id, 'has connected')
+  console.log(client.id, 'has connected');
   client.on('joinGameRoom', async (data) => {
-    console.log('Client has tried to join the room', data);
-    const { userID, roomID } = data;
-    let roomClients = await io.sockets.adapter.rooms.get(roomID);
-    if (!roomClients) {
-      RoomUserSocket[roomID] = {};
-    }
-    // Присваиваем айдишнику пользователя вошедшего в комнату его текущий сокет
-    RoomUserSocket[roomID][userID] = client; 
+    try {
+      console.log('Client has tried to join the room', data);
+      const { userID, roomID } = data;
+      let roomClients = await io.sockets.adapter.rooms.get(roomID);
+      if (!roomClients) {
+        const questions = await getQuestions();
+        RoomUser[roomID] = {
+          step: 0,
+          questions,
+          timerCount: 60
+        };
+      }
+  
+      if (!RoomUser[roomID][userID]) {
+        RoomUser[roomID][userID] = {
+          selected: null
+        };
+      }
+  
+      // const usersLength = Object.keys(RoomUser[roomID]).length;
+      // если меньше двух уникальных пользователей, можно присоединиться в комнату
+      // if (!roomClients || (roomClients && roomClients.size < 2)) { 
+      client.join(roomID);
+      roomClients = await io.sockets.adapter.rooms.get(roomID);
+      console.log('Client has joined the room', data, roomClients);
+      // }
+  
+      // если два участника в комнате
+      
+      console.log(roomClients);
+      if (roomClients && roomClients.size >= 2) {
+        io.to(roomID).emit('startGame', { roomID });
+  
+        const otherID = Object.keys(RoomUser[roomID]).filter(key => {
+          if (key !== userID && key.length > 16) {
+            return true;
+          }
+        })[0];
 
-    // const usersLength = Object.keys(RoomUserSocket[roomID]).length;
-    // если меньше двух уникальных пользователей, можно присоединиться в комнату
-    // if (!roomClients || (roomClients && roomClients.size < 2)) { 
-    client.join(roomID);
-    roomClients = await io.sockets.adapter.rooms.get(roomID);
-    console.log('Client has joined the room', data, roomClients);
-    // }
+        if (!RoomUser[roomID].timer) {
+          RoomUser[roomID].timer = setInterval(() => {
+            RoomUser[roomID].timerCount -= 1;
+            io.to(roomID).emit('timerUpdate', { timer: RoomUser[roomID].timerCount });
+            if (RoomUser[roomID].timerCount < 1) clearInterval(RoomUser[roomID].timer);
+          }, 1000);
+        }
 
-    // если два участника в комнате
-    console.log(roomClients);
-    if (roomClients && roomClients.size >= 2) {
-      const questions = await getQuestions();
-      io.to(roomID).emit('startGame', { roomID: roomID });
-      io.to(roomID).emit('pushGameInfo', { roomID: roomID, questions });
+        console.log('otherID >', otherID, RoomUser[roomID]);
+        io.to(roomID).emit('pushGameInfo', { 
+          roomID, 
+          questions: RoomUser[roomID].questions,
+          step: Math.floor(RoomUser[roomID].step),
+          otherID
+        });
+      }
+    } catch (error) {
+      console.log(error);
     }
   });
 
   client.on('chooseAnswer', async (data) => {
-    console.log('client chose answer >', data);
-    const { roomID, answerID } = data;
-    client.to(roomID).emit('otherPlayerChoseAnswer', { answerID });
+    try {
+      console.log('client chose answer >', data);
+      const { roomID, answerID, userID, otherID } = data;
+      if (!RoomUser?.[roomID]?.[userID]) {
+        RoomUser[roomID][userID] = {
+          selected: null
+        };
+      }
+      RoomUser[roomID][userID].selected = answerID;
+      RoomUser[roomID].step += 0.5;
+      if (RoomUser[roomID].step === Math.floor(RoomUser[roomID].step)) {
+        RoomUser[roomID].timerCount = 60;
+      }
+      if (RoomUser[roomID].step > questions.length - 1) clearInterval(RoomUser[roomID].timer);
+      client.to(roomID).emit('otherPlayerChoseAnswer', { answerID });
+    } catch (error) {
+        console.log(error);
+    }
   });
 
   userID++;
