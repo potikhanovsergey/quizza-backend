@@ -139,6 +139,8 @@ io.on('connection', async (client) => {
 
   userID++;
   io.to(client.id).emit('sendID', {userID})
+});
 
-
+app.get('/', function(req, res) {
+  res.send('hello world');
 });
