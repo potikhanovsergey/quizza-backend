@@ -27,7 +27,7 @@ app.use(cors());
 
 const uri = "mongodb+srv://quizza-user:XdSvJoxVSlVBcZer@quizzacluster.qcyt3.mongodb.net/?retryWrites=true&w=majority";
 
-mongoose.connect(uri, {
+mongoose.connect(process.env.MONGODB_URI || uri, {
   useNewUrlParser: true,
   useUnifiedTopology: false
 })
@@ -161,3 +161,6 @@ io.on('connection', async (client) => {
 app.get('/', function(req, res) {
   res.send('hello world');
 });
+
+
+module.exports = app;
