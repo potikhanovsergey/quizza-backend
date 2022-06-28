@@ -25,7 +25,7 @@ app.use(cors());
 //   useUnifiedTopology: false
 // })
 
-const uri = "mongodb+srv://quizza-user:XdSvJoxVSlVBcZer@quizzacluster.qcyt3.mongodb.net/?retryWrites=true&w=majority";
+const uri = "mongodb+srv://quizza-user:N0CROiMyaSPpq2F1@quizzacluster.qcyt3.mongodb.net/?retryWrites=true&w=majority";
 
 mongoose.connect(process.env.MONGODB_URI || uri, {
   useNewUrlParser: true,
@@ -51,7 +51,7 @@ mongoose.connect(process.env.MONGODB_URI || uri, {
 
 const publicPath = path.join(__dirname, '/../public');
 console.log(publicPath);
-const port = process.env.PORT || 443;
+const port = process.env.PORT || 3000;
 let httpServer = http.createServer(app);
 
 const io = new socketIO.Server(httpServer, {
