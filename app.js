@@ -9,20 +9,37 @@ const http = require('http');
 const socketIO = require('socket.io');
 const { getQuestions } = require("./controllers/questions.js");
 
+require('dotenv').config()
 
 const app = express();
 app.use(express.urlencoded({extended: true}));
 app.use(express.json())
 app.use(cors());
 
-questions.routes(app);
+// questions.routes(app);
 
-mongoose.Promise = global.Promise;
+// mongoose.Promise = global.Promise;
 
-mongoose.connect('mongodb://localhost:27017/quizzadb', {
+// mongoose.connect('mongodb://localhost:27017/quizzadb', {
+//   useNewUrlParser: true,
+//   useUnifiedTopology: false
+// })
+
+const uri = "mongodb+srv://quizza-user:XdSvJoxVSlVBcZer@quizzacluster.qcyt3.mongodb.net/?retryWrites=true&w=majority";
+
+mongoose.connect(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: false
 })
+
+// const { MongoClient, ServerApiVersion } = require('mongodb');
+// const uri = "mongodb+srv://quizza-user:<password>@quizzacluster.qcyt3.mongodb.net/?retryWrites=true&w=majority";
+// const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
+// client.connect(err => {
+//   const collection = client.db("test").collection("devices");
+//   // perform actions on the collection object
+//   client.close();
+// });
 
 
 // app.listen(PORT);
