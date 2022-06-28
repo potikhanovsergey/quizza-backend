@@ -51,7 +51,7 @@ mongoose.connect(process.env.MONGODB_URI || uri, {
 
 const publicPath = path.join(__dirname, '/../public');
 console.log(publicPath);
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 443;
 let httpServer = http.createServer(app);
 
 const io = new socketIO.Server(httpServer, {
