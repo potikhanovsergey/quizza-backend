@@ -16,7 +16,7 @@ app.use(express.urlencoded({extended: true}));
 app.use(express.json())
 app.use(cors());
 
-// questions.routes(app);
+questions.routes(app);
 
 // mongoose.Promise = global.Promise;
 
