@@ -32,6 +32,9 @@ mongoose.connect(process.env.MONGODB_URI || uri, {
   useUnifiedTopology: false
 })
 
+const { QuestionSchema } = require('./models/questions.js');
+const Question = mongoose.model('Questions', QuestionSchema);
+
 // const { MongoClient, ServerApiVersion } = require('mongodb');
 // const uri = "mongodb+srv://quizza-user:<password>@quizzacluster.qcyt3.mongodb.net/?retryWrites=true&w=majority";
 // const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
@@ -75,14 +78,15 @@ io.on('connection', async (client) => {
   client.on('joinGameRoom', async (data) => {
     try {
       console.log('Client has tried to join the room', data);
-      const { userID, roomID } = data;
+      const { userID, roomID, rounds } = data;
       let roomClients = await io.sockets.adapter.rooms.get(roomID);
       if (!roomClients) {
-        const questions = await getQuestions();
+        const questions = await Question.aggregate([{ $sample: { size: rounds } }]); 
         RoomUser[roomID] = {
           step: 0,
           questions,
-          timerCount: 60
+          timerCount: 60,
+          rounds
         };
       }
   
@@ -97,7 +101,7 @@ io.on('connection', async (client) => {
       // if (!roomClients || (roomClients && roomClients.size < 2)) { 
       client.join(roomID);
       roomClients = await io.sockets.adapter.rooms.get(roomID);
-      console.log('Client has joined the room', data, roomClients);
+      console.log('Client has joined the room', data);
       // }
   
       // если два участника в комнате
